@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
@@ -33,47 +34,54 @@ public_users.get('/',function (req, res) {
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) { //isbn = serial no.
-    const isbn = req.params.isbn;
-
-
-    const bookDetails = books[isbn]; 
-    if (bookDetails) {
-        // If book details are found, return them as a JSON response
-        return res.status(200).json(bookDetails);
-      } else {
-        // If book details are not found, return an appropriate message
-        return res.status(404).json({ message: 'Book not found' });
-      }
+public_users.get('/isbn/:isbn',async function (req, res) { //isbn = serial no.
+    try {
+        const bookDetails = books[isbn];
+        if (bookDetails) {
+            // If book details are found, return them as a JSON response
+            return res.status(200).json(bookDetails);
+        } else {
+            // If book details are not found, return an appropriate message
+            return res.status(404).json({ message: 'Book not found' });
+        }
+    } catch (error) {
+        res.status(500).send({ message: 'Error fetching book details', error: error.message });
+    }
  });
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-    const author = req.params.author;
-    // const title = req.params.title;
-     //const reviews = req.params.reviews;
-     // Iterate through the books
-   for (const bookKey of Object.keys(books)) {
-     const book = books[bookKey];
-     if (book.author === author) {
-       // Found a book by the specified author
-       return res.status(200).json(book);
-     }
-   }
-     return res.status(404).json({ message: 'No book found for this author' });
+public_users.get('/author/:author',async function (req, res) {
+    try {
+        // Iterate through the books
+        for (const bookKey of Object.keys(books)) {
+            const book = books[bookKey];
+            if (book.author === author) {
+                // Found a book by the specified author
+                return res.status(200).json(book);
+            }
+        }
+        // If no book is found by the specified author
+        return res.status(404).json({ message: 'No book found for this author' });
+    } catch (error) {
+        res.status(500).send({ message: 'Error fetching book details', error: error.message });
+    }
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-    const title = req.params.title;
-    for (const bookKey of Object.keys(books)) {
-        const book = books[bookKey];
-        if (book.title === title) {
-          // Found a book by the specified author
-          return res.status(200).json(book);
+public_users.get('/title/:title',async function (req, res) {
+    try {
+        // Iterate through the books
+        for (const bookKey of Object.keys(books)) {
+            const book = books[bookKey];
+            if (book.title === title) {
+                // Found a book with the specified title
+                return res.status(200).json(book);
+            }
         }
-      }
         return res.status(404).json({ message: 'No book with this title' });
+    } catch (error) {
+        res.status(500).send({ message: 'Error fetching book details', error: error.message });
+    }
 });
 
 //  Get book review
